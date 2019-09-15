@@ -1,0 +1,76 @@
+# https://help.github.com/ja/articles/workflow-syntax-for-github-actions
+# https://help.github.com/ja/articles/contexts-and-expression-syntax-for-github-actions
+name: workflow-name
+on: push
+jobs:
+  job1:
+    name: job1 name
+    runs-on: ubuntu-18.04
+    steps:
+      - name: job1 step1 name
+        env:
+          ENV_VAR_JOB1: env_value_job1
+        shell: bash # set -e o pipefail
+        run: |
+          echo ENV_VAR_JOB1 value is $ENV_VAR_JOB1
+      - name: job1 step2 name
+        shell: bash # set -e o pipefail
+        run: |
+          echo job1 step2
+  job2:
+    name: job2 name
+    needs: job1
+    steps:
+      - name: job2 step1 name
+        run: |
+          echo job1 step2
+  job3:
+    name: job3 name
+    needs: job1
+    steps:
+      - name: job3 step1 name
+        run: |
+          echo job1 step2
+  job4:
+    name: job4 name context printing
+    needs: [job2, job3]
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Dump job context
+        env:
+          JOB_CONTEXT: ${{ toJson(job) }}
+        run: echo "$JOB_CONTEXT"
+      - name: Dump steps context
+        env:
+          STEPS_CONTEXT: ${{ toJson(steps) }}
+        run: echo "$STEPS_CONTEXT"
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: echo "$RUNNER_CONTEXT"
+      - name: Dump strategy context
+        env:
+          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+        run: echo "$STRATEGY_CONTEXT"
+      - name: Dump matrix context
+        env:
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+        run: echo "$MATRIX_CONTEXT"
+  job_last:
+    name: job last
+    steps:
+      - name: success
+        if: success()
+        run: echo "success :)"
+      - name: failure
+        if: failure()
+        run: echo "failure :("
+      - name: cancelled
+        if: cancelled()
+        run: echo "cancelled ..."
+      - name: always
+        if: always()
+        run: echo "always !"
